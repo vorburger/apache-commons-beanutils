@@ -262,6 +262,8 @@ with the following method signatures:</p>
         public void setFirstName(String firstName);
         public String getLastName();
         public void setLastName(String lastName);
+        public Employee getBoss();
+        public void setBoss(Employee boss);
     }
 </pre>
 
@@ -443,7 +445,8 @@ can access its properties like this:</p>
                              // DynaBean implementation you use
     String firstName = (String) employee.get("firstName");
     Address homeAddress = (Address) employee.get("address", "home");
-    Object subordinate = employee.get("subordinate", 2);
+    Employee subordinate = (Employee) employee.get("subordinate", 2);
+    Employee boss = (Employee) employee.get("boss");
 </pre>
 
 <p>One very important convenience feature should be noted:  <em>the
@@ -455,6 +458,19 @@ DynaBean getter method transparently.  Thus, you can base your application's
 dynamic property access totally on the PropertyUtils APIs, if you wish, and
 use them to access either standard JavaBeans or DynaBeans without having to
 care ahead of time how a particular bean is implemented.</p>
+
+<p>Starting with version 1.9, DynaBean supports simple properties of nested
+DynaClass types.  For example:</p> 
+
+<pre>
+    DynaBean employee = ...;
+    String firstName = (String) employee.get("firstName");
+    DynaBean homeAddress = (DynaBean) employee.get("address", "home");
+    Long zipCode = homeAddress.get("zip");
+    DynaBean subordinate = (DynaBean) employee.get("subordinate", 2);
+    DynaBean boss = (DynaBean) employee.get("boss");
+</pre>
+
 
 <p>Because DynaBean and DynaClass are interfaces, they may be implemented
 multiple times, in different ways, to address different usage scenarios.  The
@@ -481,7 +497,7 @@ the set of properties you care about:</p>
         new DynaProperty("firstName", String.class),
         new DynaProperty("lastName",  String.class)
       };
-    BasicDynaClass dynaClass = new BasicDynaClass("employee", null, props);
+    BasicDynaClass dynaClass = new BasicDynaClass("Employee", null, props);
 </pre>
 
 <p>Note that the 'dynaBeanClass' argument (in the constructor of
@@ -489,17 +505,62 @@ the set of properties you care about:</p>
 case, the value of <code>dynaClass.getDynaBeanClass</code> will just be the
 <code>Class</code> for BasicDynaBean.</p>
 
+<p>Starting with version 1.9, BasicDynaClass supports simple properties of nested
+DynaClass types.  For example:</p> 
+
+<pre>
+    DynaProperty[] adrProps = new DynaProperty[]{
+        new DynaProperty("zip", Long.class)
+      };
+    BasicDynaClass adrDynaClass = new BasicDynaClass("Address", adrProps);
+
+    DynaProperty[] empProps = new DynaProperty[]{
+        new DynaProperty("address",     java.util.Map.class,  adrDynaClass),
+        new DynaProperty("subordinate", java.util.List.class, DynaClass.class),
+        new DynaProperty("firstName",   String.class),
+        new DynaProperty("lastName",    String.class),
+        new DynaProperty("mainAddress", adrDynaClass),
+        new DynaProperty("boss",        DynaClass.class)
+      };
+    BasicDynaClass empDynaClass = new BasicDynaClass("Employee", empProps);
+    empDynaClass.getDynaProperty("boss").setDynaType(empDynaClass);
+    empDynaClass.getDynaProperty("subordinate").setDynaType(empDynaClass);
+</pre>
+
 <p>Next, you use the <code>newInstance()</code> method of this DynaClass to
 create new DynaBean instances that conform to this DynaClass, and populate
 its initial property values (much as you would instantiate a new standard
 JavaBean and then call its property setters):</p>
 
 <pre>
-    DynaBean employee = dynaClass.newInstance();
+    DynaBean employee = empDynaClass.newInstance();
+    employee.set("mainAddress", address);
     employee.set("address", new HashMap());
+    employee.set("address(home)", new Address());
     employee.set("subordinate", new mypackage.Employee[0]);
     employee.set("firstName", "Fred");
     employee.set("lastName", "Flintstone");
+</pre>
+
+<p>Or, starting with version 1.9's support for nested DynaClass types:</p> 
+
+<pre>
+    DynaBean address = adrDynaClass.newInstance();
+    address.set("zip", new Long(9016));
+    DynaBean subordinate = empDynaClass.newInstance();
+    subordinate.set("firstName", "Dino");
+    DynaBean boss = empDynaClass.newInstance();
+    boss.set("firstName", "Wilma");
+    DynaBean employee = empDynaClass.newInstance();
+    employee.set("firstName", "Fred");
+    employee.set("lastName", "Flintstone");
+    employee.set("mainAddress", address);
+    employee.set("boss", boss);
+    PropertyUtils.setProperty(employee, "boss.lastName", "Flintstone");
+    employee.set("address", new HashMap());
+    PropertyUtils.setProperty(employee, "address(home)", address);
+    employee.set("subordinate", new ArrayList());
+    ((List)employee.get("subordinate")).add(subordinate);
 </pre>
 
 <p>Note that the DynaBean class was declared to be

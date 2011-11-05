@@ -67,6 +67,17 @@ public class BasicDynaClass implements DynaClass, Serializable {
 
 
     /**
+     * Construct a new BasicDynaClass with the specified parameter.
+	 *
+     * @param name Name of this DynaBean class
+     * @param properties Property descriptors for the supported properties
+     */
+    public BasicDynaClass(String name, DynaProperty[] properties) {
+        this(name, null, properties);		
+	}
+
+    
+    /**
      * Construct a new BasicDynaClass with the specified parameters.
      *
      * @param name Name of this DynaBean class

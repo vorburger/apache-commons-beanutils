@@ -301,7 +301,7 @@ public class BasicDynaBean implements DynaBean, Serializable {
                 throw new NullPointerException
                         ("Primitive value for '" + name + "'");
             }
-        } else if (!isAssignable(descriptor.getType(), value.getClass())) {
+        } else if (!isAssignable(descriptor.getType(), descriptor.getDynaType(), value)) {
             throw new ConversionException
                     ("Cannot assign value of type '" +
                     value.getClass().getName() +
@@ -313,7 +313,7 @@ public class BasicDynaBean implements DynaBean, Serializable {
     }
 
 
-    /**
+	/**
      * Set the value of an indexed property with the specified name.
      *
      * @param name Name of the property whose value is to be set
@@ -406,6 +406,30 @@ public class BasicDynaBean implements DynaBean, Serializable {
 
 
     /**
+     * Is an object of the source class assignable to the destination dynamic class?
+     *
+     * @param destClass Destination class
+     * @param source Source class
+     * @return <code>true</code> if the source class is assignable to the
+     * destination class, otherwise <code>false</code>
+     */
+    protected boolean isAssignable(Class destClass, DynaClass destDynaClass, Object sourceValue) {
+    	Class sourceClass = sourceValue.getClass();
+    	boolean isStaticallyAssignable = isAssignable(destClass, sourceClass);
+    	if (isStaticallyAssignable) {
+    		return true;
+    	} else {
+    		if (sourceValue instanceof DynaBean) {
+				DynaBean sourceValueAsDynaBean = (DynaBean) sourceValue;
+				DynaClass sourceDynaClass = sourceValueAsDynaBean.getDynaClass();
+				// DynaClass has no inheritance, and no isAssignableFrom, so just equals is fine:
+				return sourceDynaClass.equals(destDynaClass);
+			}
+    		return false;
+    	}
+    }
+
+    /**
      * Is an object of the source class assignable to the destination class?
      *
      * @param dest Destination class
@@ -414,7 +438,6 @@ public class BasicDynaBean implements DynaBean, Serializable {
      * destination class, otherwise <code>false</code>
      */
     protected boolean isAssignable(Class dest, Class source) {
-
         if (dest.isAssignableFrom(source) ||
                 ((dest == Boolean.TYPE) && (source == Boolean.class)) ||
                 ((dest == Byte.TYPE) && (source == Byte.class)) ||
@@ -428,8 +451,5 @@ public class BasicDynaBean implements DynaBean, Serializable {
         } else {
             return (false);
         }
-
     }
-
-
 }

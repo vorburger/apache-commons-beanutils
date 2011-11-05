@@ -35,10 +35,11 @@ import java.util.Map;
  * for use by mapped and iterated properties. 
  * A mapped or iterated property may choose to indicate the type it expects.
  * The DynaBean implementation may choose to enforce this type on its entries.
- * Alternatively, an implementatin may choose to ignore this property.
+ * Alternatively, an implementation may choose to ignore this property.
  * All keys for maps must be of type String so no meta data is needed for map keys.</p>
  *
  * @author Craig R. McClanahan
+ * @author Michael Vorburger - Dynamic Nested Content Types
  * @version $Revision: 926529 $ $Date: 2010-03-23 12:44:24 +0100 (Tue, 23 Mar 2010) $
  */
 
@@ -97,6 +98,21 @@ public class DynaProperty implements Serializable {
     }
     
     /**
+     * Construct a property of the specified dynamic data type.
+     *
+     * @param name Name of the property being described
+     * @param dynaType DynaClass that all indexed or mapped elements are instances of.  
+     * 			Use DynaClass.class if the DynaClass needed has not been defined yet,
+     * 			and set it later via {@link #setDynaType(DynaClass)}.
+     */
+	public DynaProperty(String name, DynaClass dynaType) {
+        super();
+        this.name = name;
+        this.dynaType = dynaType;
+        this.type = DynaClass.class;
+	}
+
+    /**
      * Construct an indexed or mapped <code>DynaProperty</code> that supports (pseudo)-introspection
      * of the content type.
      *
@@ -113,9 +129,29 @@ public class DynaProperty implements Serializable {
         
     }
 
+    /**
+     * Construct an indexed or mapped <code>DynaProperty</code>
+     * with a DynaClass content type.
+     * 
+     * @param name Name of the property being described
+     * @param type Java class representing the property data type, must be java.util.Map or java.util.List
+     * @param dynaContentType DynaClass that all indexed or mapped elements are instances of.  
+     * 			Use DynaClass.class if the DynaClass needed has not been defined yet,
+     * 			and set it later via {@link #setDynaType(DynaClass)}.
+     */
+    public DynaProperty(String name, Class type, DynaClass dynaContentType) {
+        super();
+        this.name = name;
+        if (!(List.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type))) {
+        	throw new IllegalArgumentException("type arg must be java.util.Map or java.util.List, but is: " + type.toString());
+        }
+        this.type = type;
+        this.dynaType = dynaContentType;
+	}
+
     // ------------------------------------------------------------- Properties
 
-    /** Property name */
+	/** Property name */
     protected String name = null;
     /**
      * Get the name of this property.
@@ -144,23 +180,64 @@ public class DynaProperty implements Serializable {
     }
     
     
-    /** The <em>(optional)</em> type of content elements for indexed <code>DynaProperty</code> */
+    /** The <em>(optional)</em> type of content elements for indexed and mapped <code>DynaProperty</code> */
     protected transient Class contentType;
     /**
-     * Gets the <em>(optional)</em> type of the indexed content for <code>DynaProperty</code>'s
+     * Gets the <em>(optional)</em> type of the indexed or mapped content for <code>DynaProperty</code>'s
      * that support this feature.
      *
      * <p>There are issues with serializing primitive class types on certain JVM versions
      * (including java 1.3).
      * Therefore, this field <strong>must not be serialized using the standard methods</strong>.</p>
      *
-     * @return the Class for the content type if this is an indexed <code>DynaProperty</code> 
+     * @return the Class for the content type if this is an indexed or mapped <code>DynaProperty</code> 
      * and this feature is supported. Otherwise null.
      */
     public Class getContentType() {
         return contentType;
     }
     
+    /** The <em>(optional)</em> dynamic type of underlying property
+     * values, or of content elements for indexed or mapped <code>DynaProperty</code> */
+    protected transient DynaClass dynaType = null;
+    
+    /**
+     * Gets the <em>(optional)</em> dynamic type of underlying property value,
+     * or of the indexed or mapped content for <code>DynaProperty</code>'s
+     * that support this feature.
+     *
+     * <p>There are issues with serializing primitive class types on certain JVM versions
+     * (including java 1.3).
+     * Therefore, this field <strong>must not be serialized using the standard methods</strong>.</p>
+     *
+     * @return the DynaClass type (or null)
+     */
+    public DynaClass getDynaType() {
+        return dynaType;
+    }
+
+    /**
+     * Sets the <em>(optional)</em> dynamic type.
+     *
+     * Only allowed to be used if DynaClass.class was initially passed {@link #DynaProperty(String, Class, DynaClass)};
+     * else if already then an UnsupportedOperationException is thrown.
+     *
+     * @param dynaContentType DynaClass of underlying single value property, or that all indexed or mapped elements are instances of.  
+     */
+	public void setDynaType(DynaClass dynaContentType) {
+		if (DynaClass.class.equals(this.dynaType) 
+				|| ((DynaClass.class.equals(this.type) 
+						|| DynaClass.class.equals(this.contentType)) 
+					&& this.dynaType == null)) 
+		{
+			this.dynaType = dynaContentType;
+		} else {
+			throw new UnsupportedOperationException("DynaContentType already set to "
+					+ this.dynaType.getName() + ", cannot change it to "
+					+ dynaContentType.getName());
+		}
+	}
+
     // --------------------------------------------------------- Public Methods
 
 
@@ -366,4 +443,5 @@ public class DynaProperty implements Serializable {
             return ((Class) in.readObject());
         }
     }
+
 }
