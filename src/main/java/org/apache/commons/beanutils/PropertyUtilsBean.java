@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.bytecode.ByteCodeStaticPropertiesDynaBean;
 import org.apache.commons.beanutils.expression.DefaultResolver;
 import org.apache.commons.beanutils.expression.Resolver;
 import org.apache.commons.collections.FastHashMap;
@@ -240,7 +241,7 @@ public class PropertyUtilsBean {
             throw new IllegalArgumentException("No origin bean specified");
         }
 
-        if (orig instanceof DynaBean) {
+        if (isDynaBean(orig)) {
             DynaProperty[] origDescriptors =
                 ((DynaBean) orig).getDynaClass().getDynaProperties();
             for (int i = 0; i < origDescriptors.length; i++) {
@@ -248,7 +249,7 @@ public class PropertyUtilsBean {
                 if (isReadable(orig, name) && isWriteable(dest, name)) {
                     try {
                         Object value = ((DynaBean) orig).get(name);
-                        if (dest instanceof DynaBean) {
+                        if (isDynaBean(dest)) {
                             ((DynaBean) dest).set(name, value);
                         } else {
                                 setSimpleProperty(dest, name, value);
@@ -267,7 +268,7 @@ public class PropertyUtilsBean {
                 String name = (String)entry.getKey();
                 if (isWriteable(dest, name)) {
                     try {
-                        if (dest instanceof DynaBean) {
+                        if (isDynaBean(dest)) {
                             ((DynaBean) dest).set(name, entry.getValue());
                         } else {
                             setSimpleProperty(dest, name, entry.getValue());
@@ -287,7 +288,7 @@ public class PropertyUtilsBean {
                 if (isReadable(orig, name) && isWriteable(dest, name)) {
                     try {
                         Object value = getSimpleProperty(orig, name);
-                        if (dest instanceof DynaBean) {
+                        if (isDynaBean(dest)) {
                             ((DynaBean) dest).set(name, value);
                         } else {
                                 setSimpleProperty(dest, name, value);
@@ -331,7 +332,7 @@ public class PropertyUtilsBean {
             throw new IllegalArgumentException("No bean specified");
         }
         Map description = new HashMap();
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty[] descriptors =
                 ((DynaBean) bean).getDynaClass().getDynaProperties();
             for (int i = 0; i < descriptors.length; i++) {
@@ -455,7 +456,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -614,7 +615,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -1193,7 +1194,7 @@ public class PropertyUtilsBean {
         name = resolver.getProperty(name);
 
         // Special handling for DynaBeans
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -1304,7 +1305,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -1424,7 +1425,7 @@ public class PropertyUtilsBean {
         }
 
         // Return the requested result
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             // All DynaBean properties are readable
             return (((DynaBean) bean).getDynaClass().getDynaProperty(name) != null);
         } else {
@@ -1515,7 +1516,7 @@ public class PropertyUtilsBean {
         }
 
         // Return the requested result
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             // All DynaBean properties are writeable
             return (((DynaBean) bean).getDynaClass().getDynaProperty(name) != null);
         } else {
@@ -1653,7 +1654,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -1820,7 +1821,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -2114,7 +2115,7 @@ public class PropertyUtilsBean {
         }
 
         // Handle DynaBean instances specially
-        if (bean instanceof DynaBean) {
+        if (isDynaBean(bean)) {
             DynaProperty descriptor =
                     ((DynaBean) bean).getDynaClass().getDynaProperty(name);
             if (descriptor == null) {
@@ -2247,5 +2248,19 @@ public class PropertyUtilsBean {
             throw e;
             
         }
+    }
+    
+    /**
+     * Check if bean is a DynaBean,
+     * but NOT a PropertyUtilsUsingDynaBean.
+     * 
+     * Intentionally package-local, so that BeanUtilsBean can also call it.
+     * 
+     * @param bean the JavaBean to check
+     * @return bean instanceof DynaBean && !(bean instanceof PropertyUtilsUsingDynaBean)
+     */
+    static boolean isDynaBean(Object bean) {
+    	return (bean instanceof DynaBean
+    			&& !(bean instanceof ByteCodeStaticPropertiesDynaBean));
     }
 }

@@ -178,7 +178,7 @@ public class BeanUtilsBean {
             log.debug("Cloning bean: " + bean.getClass().getName());
         }
         Object newBean = null;
-        if (bean instanceof DynaBean) {
+        if (PropertyUtilsBean.isDynaBean(bean)) {
             newBean = ((DynaBean) bean).getDynaClass().newInstance();
         } else {
             newBean = bean.getClass().newInstance();
@@ -248,7 +248,7 @@ public class BeanUtilsBean {
         }
 
         // Copy the properties, converting as necessary
-        if (orig instanceof DynaBean) {
+        if (PropertyUtilsBean.isDynaBean(orig)) {
             DynaProperty[] origDescriptors =
                 ((DynaBean) orig).getDynaClass().getDynaProperties();
             for (int i = 0; i < origDescriptors.length; i++) {
@@ -379,7 +379,7 @@ public class BeanUtilsBean {
         String key = resolver.getKey(name);           // Mapped key value (if any)
 
         // Calculate the target property type
-        if (target instanceof DynaBean) {
+        if (PropertyUtilsBean.isDynaBean(target)) {
             DynaClass dynaClass = ((DynaBean) target).getDynaClass();
             DynaProperty dynaProperty = dynaClass.getDynaProperty(propName);
             if (dynaProperty == null) {
@@ -497,7 +497,7 @@ public class BeanUtilsBean {
         }
             
         Map description = new HashMap();
-        if (bean instanceof DynaBean) {
+        if (PropertyUtilsBean.isDynaBean(bean)) {
             DynaProperty[] descriptors =
                 ((DynaBean) bean).getDynaClass().getDynaProperties();
             for (int i = 0; i < descriptors.length; i++) {
@@ -918,7 +918,7 @@ public class BeanUtilsBean {
         String key = resolver.getKey(name);           // Mapped key value (if any)
 
         // Calculate the property type
-        if (target instanceof DynaBean) {
+        if (PropertyUtilsBean.isDynaBean(target)) {
             DynaClass dynaClass = ((DynaBean) target).getDynaClass();
             DynaProperty dynaProperty = dynaClass.getDynaProperty(propName);
             if (dynaProperty == null) {

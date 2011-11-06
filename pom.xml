@@ -27,7 +27,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>commons-beanutils</groupId>
   <artifactId>commons-beanutils</artifactId>
-  <version>1.8.4-SNAPSHOT</version>
+  <version>1.9.0-SNAPSHOT</version>
   <name>Commons BeanUtils</name>
 
   <inceptionYear>2000</inceptionYear>
@@ -133,10 +133,20 @@
     <contributor>
       <name>Berin Loritsch</name>
       <email></email>
+    </contributor>
+    <contributor>
+      <name>Michael Vorburger</name>
+      <email>mike@vorburger.ch</email>
     </contributor>    
   </contributors>
 
   <dependencies>
+	<dependency>
+		<!-- CGLIB is used in org.apache.commons.beanutils.bytecode (only) -->
+		<groupId>cglib</groupId>
+		<artifactId>cglib</artifactId>
+		<version>2.2.2</version>
+	</dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
