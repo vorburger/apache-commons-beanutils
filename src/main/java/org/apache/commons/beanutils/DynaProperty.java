@@ -147,6 +147,7 @@ public class DynaProperty implements Serializable {
         }
         this.type = type;
         this.dynaType = dynaContentType;
+        this.contentType = DynaClass.class;
 	}
 
     // ------------------------------------------------------------- Properties
