@@ -1,0 +1,32 @@
+# DynaClassReader Test Domain
+
+## Lines starting with '#'
+## or '//' are considered comments
+## The /* other Java Comment Syntax */ is not supported.
+## Nor are comments // at the end of a normal line - only full comment lines 
+#
+# Encoding is always UTF-8
+
+// Each line is:
+//    * either the name of a new class, followed by a '{'
+//    * or the name of a new property, followed by a ':'
+//        followed by either a Java Class Name necessarily with '.' package delimiter
+//        or the name of another DynaClass (without .) in the DynaClassReader
+//        which could be defined later in the file, or in another file;
+//        and, optionally, a '*' (List) or '<>' (Map) at the end. 
+//    * or a '}' to end class
+// Newlines matter (contrary to Java), i.e. you cannot put several properties on one line. 
+
+Address  { 
+	zip:  java.lang.Long 
+}
+
+Employee {
+firstName : java.lang.String
+	lastName :java.lang.String   
+	
+	mainAddress  : Address
+	boss         : Employee
+	subordinates : Employee *
+	address      : Address <>
+}
