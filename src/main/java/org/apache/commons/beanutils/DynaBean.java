@@ -46,7 +46,7 @@ public interface DynaBean {
      * @exception IllegalArgumentException if there is no property
      *  of the specified name
      */
-    public boolean contains(String name, String key);
+    public boolean contains(String name, String key) throws IllegalArgumentException;
 
 
     /**
@@ -58,7 +58,7 @@ public interface DynaBean {
      * @exception IllegalArgumentException if there is no property
      *  of the specified name
      */
-    public Object get(String name);
+    public Object get(String name) throws IllegalArgumentException;
 
 
     /**
@@ -77,7 +77,7 @@ public interface DynaBean {
      * @exception NullPointerException if no array or List has been
      *  initialized for this property
      */
-    public Object get(String name, int index);
+    public Object get(String name, int index) throws IllegalArgumentException, IndexOutOfBoundsException, NullPointerException;
 
 
     /**
@@ -93,14 +93,14 @@ public interface DynaBean {
      * @exception IllegalArgumentException if the specified property
      *  exists, but is not mapped
      */
-    public Object get(String name, String key);
+    public Object get(String name, String key) throws IllegalArgumentException;
 
 
     /**
      * Return the <code>DynaClass</code> instance that describes the set of
      * properties available for this DynaBean.
      *
-     * @return The associated DynaClass
+     * @return The associated DynaClass, never null
      */
     public DynaClass getDynaClass();
 
@@ -116,7 +116,7 @@ public interface DynaBean {
      * @exception IllegalArgumentException if there is no property
      *  of the specified name
      */
-    public void remove(String name, String key);
+    public void remove(String name, String key) throws IllegalArgumentException;
 
 
     /**
@@ -132,7 +132,7 @@ public interface DynaBean {
      * @exception NullPointerException if an attempt is made to set a
      *  primitive property to null
      */
-    public void set(String name, Object value);
+    public void set(String name, Object value) throws ConversionException, IllegalArgumentException, NullPointerException;
 
 
     /**
@@ -151,7 +151,7 @@ public interface DynaBean {
      * @exception IndexOutOfBoundsException if the specified index
      *  is outside the range of the underlying property
      */
-    public void set(String name, int index, Object value);
+    public void set(String name, int index, Object value) throws ConversionException, IllegalArgumentException, IndexOutOfBoundsException;
 
 
     /**
@@ -168,7 +168,7 @@ public interface DynaBean {
      * @exception IllegalArgumentException if the specified property
      *  exists, but is not mapped
      */
-    public void set(String name, String key, Object value);
+    public void set(String name, String key, Object value) throws ConversionException, IllegalArgumentException;
 
 
 }
